@@ -52,6 +52,7 @@ CREATE TABLE 'Teacher' (
 CREATE TABLE Classroom (
   classroom_id int NOT NULL,
   classroom_address varchar(250) NOT NULL,
+  PRIMARY KEY (classroom_id)
 )
 
 # Create TABLE 'Course'
