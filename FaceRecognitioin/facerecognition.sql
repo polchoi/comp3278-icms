@@ -32,7 +32,8 @@ CREATE TABLE `Student` (
   `student_id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `login_time` time NOT NULL,
-  `login_date` date NOT NULL
+  `login_date` date NOT NULL,
+  PRIMARY KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 LOCK TABLES `Student` WRITE;
@@ -41,19 +42,28 @@ INSERT INTO `Student` VALUES (1, "JACK", NOW(), '2021-01-20');
 /*!40000 ALTER TABLE `Student` ENABLE KEYS */;
 UNLOCK TABLES;
 
+CREATE TABLE 'Teacher' (
+  'teacher_id' int NOT NULL,
+  'name' varchar(250) NOT NULL,
+  PRIMARY KEY (teacher_id)
+)
+
+# Create TABLE 'Classroom'
+CREATE TABLE Classroom (
+  classroom_id int NOT NULL,
+  classroom_address varchar(250) NOT NULL,
+)
 
 # Create TABLE 'Course'
 CREATE TABLE 'Course' (
   'course_id' int NOT NULL,
   'start_time' date NOT NULL,
   'course_name' varchar(250) NOT NULL,
-  'classroom_address' varchar(250) NOT NULL,
-  'teacher_id' int NOT NULL
-)
-
-CREATE TABLE 'Teacher' (
+  'classroom_id' int NOT NULL,
   'teacher_id' int NOT NULL,
-  'name' varchar(250) NOT NULL
+  PRIMARY KEY (course_id),
+  FOREIGN KEY (classroom_id) REFERENCES Classroom(classroom_id),
+  FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
 )
 
 CREATE TABLE 'TeacherMessage' (
@@ -61,13 +71,43 @@ CREATE TABLE 'TeacherMessage' (
   'teacher_id' int NOT NULL,
   'course_id' int NOT NULL,
   'message' varchar(250) NOT NULL,
-  'time_sent' date NOT NULL
+  'time_sent' date NOT NULL,
+  PRIMARY KEY (message_id),
+  FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id),
+  FOREIGN KEY (course_id) REFERENCES Course(course_id)
 )
 
+CREATE TABLE Enrollment (
+  student_id int NOT NULL,
+  course_id int NOT NULL,
+  PRIMARY KEY (student_id, course_id)
+  FOREIGN KEY (student_id) REFERENCES Student(student_id),
+  FOREIGN KEY (course_id) REFERENCES Course(course_id)
+)
 
-# Create TABLE 'Classroom'
-# Create other TABLE...
+CREATE TABLE Lecture (
+  lecture_id int NOT NULL,
+  course_id int NOT NULL,
+  lecture_date date NOT NULL,
+  PRIMARY KEY (lecture_id),
+  FOREIGN KEY (course_id) REFERENCES Course(course_id),
+)
 
+CREATE TABLE LectureFile (
+  material_id int NOT NULL,
+  lecture_id int NOT NULL,
+  file_name varchar(250) NOT NULL,
+  file_type varchar(250) NOT NULL,
+  file_size int NOT NULL,
+  PRIMARY KEY (material_id, lecture_id),
+  FOREIGN KEY (lecture_id) REFERENCES Lecture(lecture_id)
+)
+
+CREATE TABLE LectureZoomLink (
+  lecture_id int NOT NULL,
+  zoom_link varchar(250) NOT NULL,
+  PRIMARY KEY (zoom_link)
+)
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
