@@ -43,6 +43,14 @@ UNLOCK TABLES;
 
 
 # Create TABLE 'Course'
+CREATE TABLE 'Course' (
+  'course_id' int NOT NULL,
+  'start_time' date NOT NULL,
+  'course_name' varchar(250) NOT NULL,
+  'classroom_address' varchar(250) NOT NULL,
+  'teacher_id' int NOT NULL
+)
+
 # Create TABLE 'Classroom'
 # Create other TABLE...
 
