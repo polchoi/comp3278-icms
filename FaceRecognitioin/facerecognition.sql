@@ -51,6 +51,20 @@ CREATE TABLE 'Course' (
   'teacher_id' int NOT NULL
 )
 
+CREATE TABLE 'Teacher' (
+  'teacher_id' int NOT NULL,
+  'name' varchar(250) NOT NULL
+)
+
+CREATE TABLE 'TeacherMessage' (
+  'message_id' int NOT NULL,
+  'teacher_id' int NOT NULL,
+  'course_id' int NOT NULL,
+  'message' varchar(250) NOT NULL,
+  'time_sent' date NOT NULL
+)
+
+
 # Create TABLE 'Classroom'
 # Create other TABLE...
 
