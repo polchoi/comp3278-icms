@@ -25,10 +25,10 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `Student`
 --
-DROP TABLE IF EXISTS `Student`;
+DROP TABLE IF EXISTS Student;
 
-# Create TABLE 'Student'
-CREATE TABLE `Student` (
+-- Create TABLE 'Student'
+CREATE TABLE Student (
   `student_id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `login_time` time NOT NULL,
@@ -36,27 +36,27 @@ CREATE TABLE `Student` (
   PRIMARY KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-LOCK TABLES `Student` WRITE;
+LOCK TABLES Student WRITE;
 /*!40000 ALTER TABLE `Student` DISABLE KEYS */;
-INSERT INTO `Student` VALUES (1, "JACK", NOW(), '2021-01-20');
+INSERT INTO Student VALUES (1, "JACK", NOW(), '2021-01-20');
 /*!40000 ALTER TABLE `Student` ENABLE KEYS */;
 UNLOCK TABLES;
 
-CREATE TABLE 'Teacher' (
+CREATE TABLE Teacher (
   'teacher_id' int NOT NULL,
   'name' varchar(250) NOT NULL,
   PRIMARY KEY (teacher_id)
 )
 
-# Create TABLE 'Classroom'
+-- Create TABLE 'Classroom'
 CREATE TABLE Classroom (
   classroom_id int NOT NULL,
   classroom_address varchar(250) NOT NULL,
   PRIMARY KEY (classroom_id)
 )
 
-# Create TABLE 'Course'
-CREATE TABLE 'Course' (
+-- Create TABLE 'Course'
+CREATE TABLE Course (
   'course_id' int NOT NULL,
   'start_time' date NOT NULL,
   'course_name' varchar(250) NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE 'Course' (
   FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
 )
 
-CREATE TABLE 'TeacherMessage' (
+CREATE TABLE TeacherMessage (
   'message_id' int NOT NULL,
   'teacher_id' int NOT NULL,
   'course_id' int NOT NULL,
