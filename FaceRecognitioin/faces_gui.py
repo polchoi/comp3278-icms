@@ -6,28 +6,66 @@ import pyttsx3
 import pickle
 from datetime import datetime
 import sys
+import random
 import PySimpleGUI as sg
 
 
 def feature(result):
-    layout = [
-        [
-            sg.Text(
-                "Class Imminent",
-                size=(18, 1),
-                font=("Any", 18),
-                text_color="#1c86ee",
-                justification="left",
-            )
-        ],
-        [
-            sg.Text("[Class Name]"),
-        ],
-        [
-            sg.Text("[Class Material]"),
-        ],
-        [sg.OK()],
-    ]
+    isTrue = random.randrange(1)
+    if isTrue == 1:
+        layout = [
+            [
+                sg.Text(
+                    "Class Imminent",
+                    size=(18, 1),
+                    font=("Any", 18),
+                    text_color="#1c86ee",
+                    justification="left",
+                )
+            ],
+            [
+                sg.Text("[Class Name]"),
+            ],
+            [
+                sg.Text("[Class Material]"),
+            ],
+            [sg.OK()],
+        ]
+    else:
+        toprow = ["ClassCode", "ClassName", "Date", "Time"]
+        rows = [
+            ["COMP2323", "Discrete Baking", "2023-02-31", "18:00"],
+            ["COMP2324", "Intro to Object Oriented Baking", "2023-02-31", "18:00"],
+            ["COMP2326", "Data Science in Baking", "2023-02-31", "18:00"],
+            ["COMP2325", "AI and Baking", "2023-02-31", "18:00"],
+        ]
+        tbl1 = sg.Table(
+            values=rows,
+            headings=toprow,
+            auto_size_columns=True,
+            display_row_numbers=False,
+            justification="center",
+            key="-TABLE-",
+            selected_row_colors="red on yellow",
+            enable_events=True,
+            expand_x=True,
+            expand_y=True,
+            enable_click_events=True,
+        )
+
+        layout = [
+            [
+                sg.Text(
+                    "Class TimeTable",
+                    size=(18, 1),
+                    font=("Any", 18),
+                    text_color="#1c86ee",
+                    justification="left",
+                )
+            ],
+            [tbl1],
+            [sg.OK()],
+        ]
     win = sg.Window(
         "Attendance System",
         default_element_size=(21, 1),
@@ -36,7 +74,7 @@ def feature(result):
     ).Layout(layout)
     event, _ = win.Read(timeout=20)
     if event is None or event == "Okay":
-        win.Close()
+        win.close()
 
 
 def system_start():
