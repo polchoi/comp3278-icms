@@ -44,7 +44,7 @@ UNLOCK TABLES;
 
 CREATE TABLE Teacher (
   `teacher_id` int NOT NULL,
-  `name` varchar(250) NOT NULL,
+  `name` varchar(50) NOT NULL,
   PRIMARY KEY (teacher_id)
 );
 
@@ -57,25 +57,25 @@ CREATE TABLE Classroom (
 
 -- Create TABLE 'Course'
 CREATE TABLE Course (
-  `course_id` int NOT NULL,
-  `start_time` date NOT NULL,
-  `course_name` varchar(250) NOT NULL,
+  'course_code' varchar(8) NOT NULL,
+  `name` varchar(250) NOT NULL,
+  `lecture_day` varchar(3) NOT NULL,
+  `start_time` time NOT NULL,
   `classroom_id` int NOT NULL,
   `teacher_id` int NOT NULL,
-  PRIMARY KEY (course_id),
+  PRIMARY KEY (course_code),
   FOREIGN KEY (classroom_id) REFERENCES Classroom(classroom_id),
   FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
 );
 
 CREATE TABLE TeacherMessage (
   `message_id` int NOT NULL,
-  `teacher_id` int NOT NULL,
-  `course_id` int NOT NULL,
+  `course_code` int NOT NULL,
   `message` varchar(250) NOT NULL,
-  `time_sent` date NOT NULL,
-  PRIMARY KEY (message_id),
-  FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id),
-  FOREIGN KEY (course_id) REFERENCES Course(course_id)
+  `date_sent` date NOT NULL,
+  `time_sent` time NOT NULL,
+  PRIMARY KEY (message_id, course_code),
+  FOREIGN KEY (course_code) REFERENCES ㄴCourse(course_code)
 );
 
 CREATE TABLE Enrollment (
