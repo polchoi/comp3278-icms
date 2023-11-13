@@ -81,7 +81,7 @@ CREATE TABLE TeacherMessage (
 CREATE TABLE Enrollment (
   student_id int NOT NULL,
   course_id int NOT NULL,
-  PRIMARY KEY (student_id, course_id)
+  PRIMARY KEY (student_id, course_id),
   FOREIGN KEY (student_id) REFERENCES Student(student_id),
   FOREIGN KEY (course_id) REFERENCES Course(course_id)
 )
@@ -91,7 +91,7 @@ CREATE TABLE Lecture (
   course_id int NOT NULL,
   lecture_date date NOT NULL,
   PRIMARY KEY (lecture_id),
-  FOREIGN KEY (course_id) REFERENCES Course(course_id),
+  FOREIGN KEY (course_id) REFERENCES Course(course_id)
 )
 
 CREATE TABLE LectureFile (
