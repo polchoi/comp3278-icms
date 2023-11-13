@@ -11,7 +11,8 @@ import PySimpleGUI as sg
 
 
 def feature(result):
-    isTrue = random.randrange(1)
+    isTrue = random.randrange(2)
+    isTrue = 0
     if isTrue == 1:
         layout = [
             [
@@ -158,15 +159,6 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
 
             # If the student's information is found in the database
             else:
-                """
-                Implement useful functions here.
-                Check the course and classroom for the student.
-                    If the student has class room within one hour, the corresponding course materials
-                        will be presented in the GUI.
-                    if the student does not have class at the moment, the GUI presents a personal class
-                        timetable for the student.
-
-                """
                 update = "UPDATE Student SET login_date=%s WHERE name=%s"
                 val = (date, current_name)
                 cursor.execute(update, val)
@@ -226,6 +218,7 @@ cap = cv2.VideoCapture(0)
 # 3 Define pysimplegui setting
 gui_confidence, win_started = system_start()
 authenticated = False
+
 # 4 Open the camera and start face recognition
 while True:
     student_data, frame = authenticate(
@@ -282,5 +275,5 @@ while True:
         gui_confidence = values["confidence"]
 
 
-win.Close()
+win.close()
 cap.release()
