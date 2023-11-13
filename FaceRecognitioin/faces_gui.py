@@ -73,7 +73,7 @@ def feature(result):
         auto_size_text=False,
     ).Layout(layout)
     event, _ = win.Read(timeout=20)
-    if event is None or event == "Okay":
+    if event is None or event == "Ok":
         win.close()
 
 
@@ -225,7 +225,7 @@ cap = cv2.VideoCapture(0)
 
 # 3 Define pysimplegui setting
 gui_confidence, win_started = system_start()
-
+authenticated = False
 # 4 Open the camera and start face recognition
 while True:
     student_data, frame = authenticate(
@@ -237,48 +237,49 @@ while True:
         gui_confidence=gui_confidence,
     )
 
-    if student_data:
+    if not authenticated and student_data:
+        authenticated = True
         feature(student_data)
-
-    # GUI
-    imgbytes = cv2.imencode(".png", frame)[1].tobytes()
-    if not win_started:
-        win_started = True
-        layout = [
-            [sg.Text("Attendance System Interface", size=(30, 1))],
-            [sg.Image(data=imgbytes, key="_IMAGE_")],
-            [
-                sg.Text("Confidence"),
-                sg.Slider(
-                    range=(0, 100),
-                    orientation="h",
-                    resolution=1,
-                    default_value=60,
-                    size=(15, 15),
-                    key="confidence",
-                ),
-            ],
-            [sg.Exit()],
-        ]
-        win = (
-            sg.Window(
-                "Attendance System",
-                default_element_size=(14, 1),
-                text_justification="right",
-                auto_size_text=False,
-            )
-            .Layout(layout)
-            .Finalize()
-        )
-        image_elem = win.FindElement("_IMAGE_")
     else:
-        image_elem.Update(data=imgbytes)
+        # GUI
+        imgbytes = cv2.imencode(".png", frame)[1].tobytes()
+        if not win_started:
+            win_started = True
+            layout = [
+                [sg.Text("Attendance System Interface", size=(30, 1))],
+                [sg.Image(data=imgbytes, key="_IMAGE_")],
+                [
+                    sg.Text("Confidence"),
+                    sg.Slider(
+                        range=(0, 100),
+                        orientation="h",
+                        resolution=1,
+                        default_value=60,
+                        size=(15, 15),
+                        key="confidence",
+                    ),
+                ],
+                [sg.Exit()],
+            ]
+            win = (
+                sg.Window(
+                    "Attendance System",
+                    default_element_size=(14, 1),
+                    text_justification="right",
+                    auto_size_text=False,
+                )
+                .Layout(layout)
+                .Finalize()
+            )
+            image_elem = win.FindElement("_IMAGE_")
+        else:
+            image_elem.Update(data=imgbytes)
 
-    event, values = win.Read(timeout=20)
-    if event is None or event == "Exit":
-        win.close()
-        break
-    gui_confidence = values["confidence"]
+        event, values = win.Read(timeout=20)
+        if event is None or event == "Exit":
+            win.close()
+            break
+        gui_confidence = values["confidence"]
 
 
 win.Close()
