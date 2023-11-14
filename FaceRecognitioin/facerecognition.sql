@@ -114,19 +114,10 @@ CREATE TABLE LectureTeacherMessage (
 -- Create TABLE 'Material'
 CREATE TABLE Material (
   `course_id` int NOT NULL,
-  `material_id` int NOT NULL,
   `material_name` varchar(250) NOT NULL,
   `material_link` varchar(250) NOT NULL,
-  PRIMARY KEY (course_id, material_id),
+  PRIMARY KEY (course_id),
   FOREIGN KEY (course_id) REFERENCES CourseOffered(course_id)
-);
-
-CREATE TABLE LectureNote (
-
-);
-
-CREATE TABLE TutorialNote (
-
 );
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
