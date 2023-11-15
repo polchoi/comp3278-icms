@@ -29,7 +29,7 @@ DROP TABLE IF EXISTS Student;
 
 -- Create TABLE 'Student'
 CREATE TABLE Student (
-  `student_id` int NOT NULL AUTO_INCREMENT,
+  `student_id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `login_time` time NOT NULL,
   `login_date` date NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE Course (
 
 -- Create TABLE 'CourseOffered'
 CREATE TABLE CourseOffered (
-  `course_id` int NOT NULL AUTO_INCREMENT,
+  `course_id` int NOT NULL,
   `course_code` varchar(8) NOT NULL,
   `ac_year` varchar(9) NOT NULL,
   `semester` int NOT NULL,
