@@ -37,11 +37,11 @@ CREATE TABLE Student (
   PRIMARY KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-LOCK TABLES Student WRITE;
-/*!40000 ALTER TABLE `Student` DISABLE KEYS */;
-INSERT INTO Student VALUES (1, "JACK", NOW(), '2021-01-20');
-/*!40000 ALTER TABLE `Student` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES Student WRITE;
+-- /*!40000 ALTER TABLE `Student` DISABLE KEYS */;
+-- INSERT INTO Student VALUES (1, "JACK", NOW(), '2021-01-20');
+-- /*!40000 ALTER TABLE `Student` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 -- Create TABLE 'Classroom'
 CREATE TABLE Classroom (
@@ -76,7 +76,7 @@ CREATE TABLE CourseOffered (
   `teacher_id` int NOT NULL,
   `classroom_id` int NOT NULL,
   PRIMARY KEY (course_id),
-  FOREIGN KEY (course_code) REFERENCES Course(course_code),
+  FOREIGN KEY (course_code) REFERENCES Course(course_cseode),
   FOREIGN KEY (classroom_id) REFERENCES Classroom(classroom_id),
   FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
 );
@@ -107,8 +107,8 @@ CREATE TABLE LectureTeacherMessage (
   `message_id` int NOT NULL,
   `message` varchar(250) NOT NULL,
   PRIMARY KEY (course_id, lecture_id, message_id),
-  FOREIGN KEY (course_id) REFERENCES Course(course_id),
-  FOREIGN KEY (lecture_id) REFERENCES Lecture(lecture_id)
+  -- FOREIGN KEY (course_id) REFERENCES CourseOffered(course_id),
+  FOREIGN KEY (course_id, lecture_id) REFERENCES Lecture(course_id, lecture_id)
 );
 
 -- Create TABLE 'Material'
@@ -116,7 +116,7 @@ CREATE TABLE Material (
   `course_id` int NOT NULL,
   `material_name` varchar(250) NOT NULL,
   `material_link` varchar(250) NOT NULL,
-  PRIMARY KEY (course_id),
+  PRIMARY KEY (course_id, material_link),
   FOREIGN KEY (course_id) REFERENCES CourseOffered(course_id)
 );
 
