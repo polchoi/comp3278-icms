@@ -76,7 +76,7 @@ CREATE TABLE CourseOffered (
   `teacher_id` int NOT NULL,
   `classroom_id` int NOT NULL,
   PRIMARY KEY (course_id),
-  FOREIGN KEY (course_code) REFERENCES Course(course_cseode),
+  FOREIGN KEY (course_code) REFERENCES Course(course_code),
   FOREIGN KEY (classroom_id) REFERENCES Classroom(classroom_id),
   FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
 );
