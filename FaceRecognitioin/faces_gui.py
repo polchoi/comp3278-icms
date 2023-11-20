@@ -147,6 +147,7 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
             )
             name = cursor.execute(select)
             result = cursor.fetchall()
+            student_data = result[0] if result else None
             data = "error"
 
             for x in result:
@@ -166,6 +167,37 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
                 val = (current_time, current_name)
                 cursor.execute(update, val)
                 myconn.commit()
+
+                # Get the current time and add one hour
+                current_time = datetime.datetime.now()
+                one_hour_later = current_time + datetime.timedelta(hours=1)
+
+                # Check if the student has any classes within the next hour
+                select = (
+                    "SELECT Course.name, Classroom.classroom_address, Lecture.zoom_link, Material.material_link "
+                    "FROM Enrolls "
+                    "INNER JOIN CourseOffered ON Enrolls.course_id = CourseOffered.course_id "
+                    "INNER JOIN Course ON CourseOffered.course_code = Course.course_code "
+                    "INNER JOIN Classroom ON CourseOffered.classroom_id = Classroom.classroom_id "
+                    "INNER JOIN Lecture ON CourseOffered.course_id = Lecture.course_id "
+                    "INNER JOIN Material ON CourseOffered.course_id = Material.course_id "
+                    "WHERE Enrolls.student_id = %s AND CourseOffered.start_time >= %s AND CourseOffered.start_time <= %s"
+                )
+                cursor.execute(select, (student_data[0], current_time.time(), one_hour_later.time()))
+                classes = cursor.fetchall()
+
+                # If the student does not have any classes within the next hour
+                if not classes:
+                    # Get the student's class timetable
+                    select = (
+                        "SELECT Course.name, CourseOffered.start_time, CourseOffered.end_time, CourseOffered.lecture_day "
+                        "FROM Enrolls "
+                        "INNER JOIN CourseOffered ON Enrolls.course_id = CourseOffered.course_id "
+                        "INNER JOIN Course ON CourseOffered.course_code = Course.course_code "
+                        "WHERE Enrolls.student_id = %s"
+                    )
+                    cursor.execute(select, (student_data[0],))
+                    timetable = cursor.fetchall()
 
                 hello = ("Hello ", current_name, " authorized")
                 print(hello)
@@ -188,7 +220,7 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
 
 # 1 Create database connection
 myconn = mysql.connector.connect(
-    host="localhost", user="root", passwd="admin123", database="facerecognition"
+    host="localhost", user="root", passwd="shawnkang", database="facerecognition"
 )
 date = datetime.utcnow()
 now = datetime.now()
