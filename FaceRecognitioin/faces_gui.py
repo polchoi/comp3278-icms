@@ -4,16 +4,43 @@ import mysql.connector
 import cv2
 import pyttsx3
 import pickle
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import random
 import PySimpleGUI as sg
 
 
 def feature(result):
-    isTrue = random.randrange(2)
-    isTrue = 0
-    if isTrue == 1:
+    # Query to fetch class information for the student within the next hour
+    select = (
+        "SELECT co.*, c.name as course_name, t.name as teacher_name, cr.classroom_address, l.zoom_link, \
+              ltm.message, m.material_link FROM CourseOffered co \
+              JOIN Course c ON co.course_code = c.course_code \
+              JOIN Teacher t ON co.teacher_id = t.teacher_id \
+              JOIN Classroom cr ON co.classroom_id = cr.classroom_id \
+              JOIN Lecture l ON co.course_id = l.course_id \
+              JOIN LectureTeacherMessage ltm ON l.course_id = ltm.course_id AND l.lecture_id = ltm.lecture_id \
+              JOIN Material m ON co.course_id = m.course_id \
+              WHERE co.course_id IN (SELECT course_id FROM Enrolls WHERE student_id='%s') AND \
+              co.start_time >= '09:30:00' AND co.end_time < '12:30:00'"
+        #   co.start_time >= CURRENT_TIME() AND co.start_time < ADDTIME(CURRENT_TIME(), '01:00:00')"
+        % result[0][0]
+    )
+    cursor.execute(select)
+    class_info = cursor.fetchall()
+    print("CLASS INFO:", class_info)
+    print("RESULT: ", result)
+
+    # Case: If the student has class within one hour
+    if class_info:
+        message = "You have a class within one hour.\n"
+        message += "Course Code: " + class_info[0][1] + "\n"
+        message += "Course Name: " + class_info[0][9] + "\n"
+        message += "Classroom Address: " + class_info[0][11] + "\n"
+        message += "Teacher's Message: " + class_info[0][13] + "\n"
+        message += "Zoom Link: " + class_info[0][12] + "\n"
+        message += "Lecture Materials: " + class_info[0][14] + "\n"
+
         layout = [
             [
                 sg.Text(
@@ -24,21 +51,44 @@ def feature(result):
                     justification="left",
                 )
             ],
-            [
-                sg.Text("[Class Name]"),
-            ],
-            [
-                sg.Text("[Class Material]"),
-            ],
+            [sg.Text(message, size=(60, 8), justification="left")],
+            [sg.Button("Send to my email")],
             [sg.OK()],
         ]
+    # Case: If the student does not have class within one hour
     else:
-        toprow = ["ClassCode", "ClassName", "Date", "Time"]
+        select = (
+            "SELECT co.*, c.name as course_name, t.name as teacher_name, cr.classroom_address FROM CourseOffered co \
+                  JOIN Course c ON co.course_code = c.course_code \
+                  JOIN Teacher t ON co.teacher_id = t.teacher_id \
+                  JOIN Classroom cr ON co.classroom_id = cr.classroom_id \
+                  WHERE co.course_id IN (SELECT course_id FROM Enrolls WHERE student_id='%s') ORDER BY co.start_time"
+            % result[0][0]
+        )
+        cursor.execute(select)
+        timetable = cursor.fetchall()
+        print("TIMETABLE: ", timetable)
+
+        toprow = [
+            "CourseCode",
+            "CourseName",
+            "StartTime",
+            "EndTime",
+            "Day",
+            "Teacher",
+            "Classroom",
+        ]
         rows = [
-            ["COMP2323", "Discrete Baking", "2023-02-31", "18:00"],
-            ["COMP2324", "Intro to Object Oriented Baking", "2023-02-31", "18:00"],
-            ["COMP2326", "Data Science in Baking", "2023-02-31", "18:00"],
-            ["COMP2325", "AI and Baking", "2023-02-31", "18:00"],
+            [
+                class_info[1],
+                class_info[9],
+                f"{timedelta(seconds=class_info[4].seconds).seconds // 3600:02d}:{timedelta(seconds=class_info[4].seconds).seconds // 60 % 60:02d}",  # StartTime
+                f"{timedelta(seconds=class_info[5].seconds).seconds // 3600:02d}:{timedelta(seconds=class_info[5].seconds).seconds // 60 % 60:02d}",  # EndTime
+                class_info[6],
+                class_info[10],
+                class_info[11],
+            ]
+            for class_info in timetable
         ]
         tbl1 = sg.Table(
             values=rows,
@@ -73,9 +123,30 @@ def feature(result):
         text_justification="right",
         auto_size_text=False,
     ).Layout(layout)
-    event, _ = win.Read(timeout=20)
-    if event is None or event == "Ok":
-        win.close()
+
+    while True:
+        event, _ = win.Read(timeout=20)
+        print(f"Event: {event}")
+        if event is None or event == "OK":
+            win.close()
+            break
+        # This feature does not really send the email
+        elif event == "Send to my email":
+            win.close()
+            select = (
+                "SELECT email FROM Student WHERE student_id='%s'"
+                % result[0][0]
+            )
+            cursor.execute(select)
+            email = cursor.fetchall()
+            layout = [
+                [sg.Text(f"Email sent to {email[0][0]}, please check your inbox.")],
+                [sg.Button("OK")],
+            ]
+            win = sg.Window("Confirmation").Layout(layout)
+            if event is None or event == "OK":
+                win.close()
+                break
 
 
 def system_start():
@@ -147,7 +218,6 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
             )
             name = cursor.execute(select)
             result = cursor.fetchall()
-            student_data = result[0] if result else None
             data = "error"
 
             for x in result:
@@ -167,37 +237,6 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
                 val = (current_time, current_name)
                 cursor.execute(update, val)
                 myconn.commit()
-
-                # Get the current time and add one hour
-                current_time = datetime.datetime.now()
-                one_hour_later = current_time + datetime.timedelta(hours=1)
-
-                # Check if the student has any classes within the next hour
-                select = (
-                    "SELECT Course.name, Classroom.classroom_address, Lecture.zoom_link, Material.material_link "
-                    "FROM Enrolls "
-                    "INNER JOIN CourseOffered ON Enrolls.course_id = CourseOffered.course_id "
-                    "INNER JOIN Course ON CourseOffered.course_code = Course.course_code "
-                    "INNER JOIN Classroom ON CourseOffered.classroom_id = Classroom.classroom_id "
-                    "INNER JOIN Lecture ON CourseOffered.course_id = Lecture.course_id "
-                    "INNER JOIN Material ON CourseOffered.course_id = Material.course_id "
-                    "WHERE Enrolls.student_id = %s AND CourseOffered.start_time >= %s AND CourseOffered.start_time <= %s"
-                )
-                cursor.execute(select, (student_data[0], current_time.time(), one_hour_later.time()))
-                classes = cursor.fetchall()
-
-                # If the student does not have any classes within the next hour
-                if not classes:
-                    # Get the student's class timetable
-                    select = (
-                        "SELECT Course.name, CourseOffered.start_time, CourseOffered.end_time, CourseOffered.lecture_day "
-                        "FROM Enrolls "
-                        "INNER JOIN CourseOffered ON Enrolls.course_id = CourseOffered.course_id "
-                        "INNER JOIN Course ON CourseOffered.course_code = Course.course_code "
-                        "WHERE Enrolls.student_id = %s"
-                    )
-                    cursor.execute(select, (student_data[0],))
-                    timetable = cursor.fetchall()
 
                 hello = ("Hello ", current_name, " authorized")
                 print(hello)
@@ -220,7 +259,7 @@ def authenticate(cap, face_cascade, recognizer, engine, rate, gui_confidence):
 
 # 1 Create database connection
 myconn = mysql.connector.connect(
-    host="localhost", user="root", passwd="shawnkang", database="facerecognition"
+    host="localhost", user="root", passwd="admin123", database="facerecognition"
 )
 date = datetime.utcnow()
 now = datetime.now()
