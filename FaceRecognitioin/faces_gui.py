@@ -12,8 +12,9 @@ import PySimpleGUI as sg
 
 def feature(result):
     # Query to fetch class information for the student within the next hour
-    select = (
-        "SELECT co.*, c.name as course_name, t.name as teacher_name, cr.classroom_address, l.zoom_link, \
+    curr_time = datetime.now().strftime("%H:%M:%S")
+    one_hour_later = (datetime.now() + timedelta(hours=1)).strftime("%H:%M:%S")
+    select = f"SELECT co.*, c.name as course_name, t.name as teacher_name, cr.classroom_address, l.zoom_link, \
               ltm.message, m.material_link FROM CourseOffered co \
               JOIN Course c ON co.course_code = c.course_code \
               JOIN Teacher t ON co.teacher_id = t.teacher_id \
@@ -21,11 +22,8 @@ def feature(result):
               JOIN Lecture l ON co.course_id = l.course_id \
               JOIN LectureTeacherMessage ltm ON l.course_id = ltm.course_id AND l.lecture_id = ltm.lecture_id \
               JOIN Material m ON co.course_id = m.course_id \
-              WHERE co.course_id IN (SELECT course_id FROM Enrolls WHERE student_id='%s') AND \
-              co.start_time >= '09:30:00' AND co.end_time < '12:30:00'"
-        #   co.start_time >= CURRENT_TIME() AND co.start_time < ADDTIME(CURRENT_TIME(), '01:00:00')"
-        % result[0][0]
-    )
+              WHERE co.course_id IN (SELECT course_id FROM Enrolls WHERE student_id='{result[0][0]}') AND \
+              co.start_time >= '{curr_time}' AND co.end_time < '{one_hour_later}'"
     cursor.execute(select)
     class_info = cursor.fetchall()
     print("CLASS INFO:", class_info)
@@ -57,14 +55,11 @@ def feature(result):
         ]
     # Case: If the student does not have class within one hour
     else:
-        select = (
-            "SELECT co.*, c.name as course_name, t.name as teacher_name, cr.classroom_address FROM CourseOffered co \
+        select = f"SELECT co.*, c.name as course_name, t.name as teacher_name, cr.classroom_address FROM CourseOffered co \
                   JOIN Course c ON co.course_code = c.course_code \
                   JOIN Teacher t ON co.teacher_id = t.teacher_id \
                   JOIN Classroom cr ON co.classroom_id = cr.classroom_id \
-                  WHERE co.course_id IN (SELECT course_id FROM Enrolls WHERE student_id='%s') ORDER BY co.start_time"
-            % result[0][0]
-        )
+                  WHERE co.course_id IN (SELECT course_id FROM Enrolls WHERE student_id='{result[0][0]}') ORDER BY co.start_time"
         cursor.execute(select)
         timetable = cursor.fetchall()
         print("TIMETABLE: ", timetable)
@@ -126,17 +121,13 @@ def feature(result):
 
     while True:
         event, _ = win.Read(timeout=20)
-        print(f"Event: {event}")
         if event is None or event == "OK":
             win.close()
             break
         # This feature does not really send the email
         elif event == "Send to my email":
             win.close()
-            select = (
-                "SELECT email FROM Student WHERE student_id='%s'"
-                % result[0][0]
-            )
+            select = "SELECT email FROM Student WHERE student_id='%s'" % result[0][0]
             cursor.execute(select)
             email = cursor.fetchall()
             layout = [
